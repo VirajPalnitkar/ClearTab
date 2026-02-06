@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS settlement_cycles(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    group_id INT NOT NULL,
+    start_date DATETIME NOT NULL,
+    end_date DATETIME,
+    status ENUM('ACTIVE','CLOSED')  DEFAULT 'ACTIVE',
+    FOREIGN KEY(group_id) REFERENCES GROUPS(id)
+);
