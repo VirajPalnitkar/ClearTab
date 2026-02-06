@@ -3,6 +3,6 @@ CREATE TABLE IF NOT EXISTS GROUP_MEMBERS(
     group_id INT NOT NULL,
     user_id INT NOT NULL,
     UNIQUE KEY unique_membership(group_id,user_id),
-    FOREIGN KEY(group_id) REFERENCES GROUPS(id),
+    FOREIGN KEY(group_id) REFERENCES USER_GROUPS(id),
     FOREIGN KEY(user_id)   REFERENCES USERS(id)
 )

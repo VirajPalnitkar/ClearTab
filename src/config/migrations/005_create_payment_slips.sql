@@ -14,6 +14,6 @@ CREATE TABLE payment_slips (
 
   FOREIGN KEY (from_user_id) REFERENCES users(id),
   FOREIGN KEY (to_user_id) REFERENCES users(id),
-  FOREIGN KEY (group_id) REFERENCES groups(id),
+  FOREIGN KEY (group_id) REFERENCES user_groups(id),
   FOREIGN KEY (settlement_cycle_id) REFERENCES settlement_cycles(id)
 );
