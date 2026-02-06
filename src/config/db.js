@@ -1,7 +1,5 @@
 const mysql=require("mysql2/promise")
 //using the promise wrapper to utilise the built in async/await support
-
-
 //Creating connection pool so that we can reuse the existing connections and 
 //dont waste time creating new connections and dont overwhelm the sql database
 const pool=mysql.createPool({

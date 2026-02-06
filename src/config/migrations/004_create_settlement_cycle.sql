@@ -4,5 +4,5 @@ CREATE TABLE IF NOT EXISTS settlement_cycles(
     start_date DATETIME NOT NULL,
     end_date DATETIME,
     status ENUM('ACTIVE','CLOSED')  DEFAULT 'ACTIVE',
-    FOREIGN KEY(group_id) REFERENCES GROUPS(id)
+    FOREIGN KEY(group_id) REFERENCES USER_GROUPS(id)
 );

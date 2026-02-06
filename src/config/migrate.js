@@ -1,7 +1,9 @@
 const fs=require('fs');
 const path=require('path');
-const pool=require("./db")
+require("dotenv").config()
+const pool=require("./db");
 
+//always have semi-colon before iife
 (async ()=>{
     const connection=await pool.getConnection();
     try{
@@ -11,6 +13,7 @@ const pool=require("./db")
         const executed=new Set(rows.map(r=>r.name))
         const files=fs.readdirSync(path.join(__dirname,"migrations")).sort();
         for(const file of files){
+            console.log(file)
             if(executed.has(file))
                 continue;
             const sql=fs.readFileSync(
@@ -22,14 +25,15 @@ const pool=require("./db")
             console.log("Ran file")
         }
         await connection.commit();
+        await connection.release();
+        await pool.end();
+        process.exit(0);
     }
     catch(err){
         await connection.rollback();
-        throw err;
-    }
-    finally{
         connection.release();
-        process.exit();
+        await pool.end();   //  important
+        console.error(err);
+        process.exit(1);
     }
-})
-()
+})()
