@@ -1,6 +1,8 @@
 const fs=require('fs');
 const path=require('path');
+
 require("dotenv").config()
+
 const pool=require("./db");
 
 //always have semi-colon before iife
