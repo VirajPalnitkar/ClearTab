@@ -3,7 +3,7 @@ const jwt=require("jsonwebtoken")
 const pool=require("../../config/db");
 
 async function getDetails(req,res){
-    const {id}=req.body
+    const {id}=req.user
     const connection=await pool.getConnection();
     const [rows]=await connection.execute("SELECT id,name,email,phone_no FROM USERS WHERE id=?",[id]);
     connection.release();

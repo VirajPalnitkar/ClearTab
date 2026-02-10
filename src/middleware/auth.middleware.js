@@ -7,7 +7,7 @@ async function authorize(req,res,next){
     const token=auth[1];
     try{
         const decoded=jwt.verify(token,process.env.JWT_SECRET)
-        req.body=decoded
+        req.user=decoded
         next()
     }
     catch(e){
