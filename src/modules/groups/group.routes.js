@@ -1,8 +1,10 @@
 const express=require("express")
-const {createGroup}=require("./group.controller")
+const {createGroup, getGroups,inviteToGroup}=require("./group.controller")
 const {authorize}=require("../../middleware/auth.middleware")
 const router=express.Router();
 
+router.get("/",authorize,getGroups)
 router.post("/",authorize,createGroup)
+router.post("/:groupID/invite/",authorize,inviteToGroup)
 
 module.exports=router;
