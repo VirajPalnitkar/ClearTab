@@ -52,15 +52,25 @@ async function inviteToGroup(req,res){
     let connection;
     try{
         connection=await pool.getConnection();
+        await connection.beginTransaction();
+        const [rows]=await connection.execute(`
+            SELECT * from group_members where user_id=? and group_id=?
+            `,[invited_user_id,groupID])
+        console.log(rows)
+        if(rows.length>0)
+            throw new Error("Member already in grp");
         const [result]=await connection.execute(`
             INSERT INTO group_invitations(group_id,invited_user_id,invited_by_user_id)
             VALUES(?,?,?)`,
             [groupID,invited_user_id,id]
         )
         res.status(201).json({message:"Invitation sent"})
+        await connection.commit();
     }
     catch(e){
-        return res.status(500).json({error:"Failed to invite to the group"})
+        if(connection)
+            await connection.rollback();
+        return res.status(500).json({error:e.message ||"Failed to invite to the group"})
     }
     finally{
         if(connection)
@@ -68,25 +78,33 @@ async function inviteToGroup(req,res){
     }
 }
 
-// async function acceptInvitation(req,res) {
-//     const {inv_id,group_id,user_id}=req.body;
-//     let connection;
-//     try{
-//         connection=await pool.getConnection();
-//         await connection.beginTransaction();
-//         await connection.execute("INSERT INTO GROUP_MEMBERS(group_id,user_id) VALUES(?,?)",[group_id,user_id]);
-        
-//         await connection.commit()
-//         res.status(201).json({message:"Invitation accepted"})
-//     }
-//     catch(e){
-//         await connection.rollback();
-//         return res.status(500).json({error:"Failed to accept invite"})
-//     }
-//     finally{
-//         if(connection)
-//             connection.release();
-//     }
-// }
+async function acceptInvitation(req,res) {
+    const {inv_id,group_id}=req.body;
+    const {id}=req.user;
+    let connection;
+    try{
+        connection=await pool.getConnection();
+        await connection.beginTransaction();
+        const [rows]=await connection.execute(`
+            SELECT * from group_members where user_id=? and group_id=?
+            `,[id,group_id])
+        console.log(rows)
+        if(rows.length>0)
+            throw new Error("Member already in grp");
+        await connection.execute("INSERT INTO GROUP_MEMBERS(group_id,user_id) VALUES(?,?)",[group_id,id]);
+        await connection.commit()
+        res.status(201).json({message:"Invitation accepted"})
+    }
+    catch(e){
+        if(connection)
+            await connection.rollback();
+        console.log(e.message)
+        return res.status(500).json({error:"Failed to accept invite"})
+    }
+    finally{
+        if(connection)
+            connection.release();
+    }
+}
 
-module.exports={createGroup,getGroups,inviteToGroup};
+module.exports={createGroup,getGroups,inviteToGroup,acceptInvitation};
