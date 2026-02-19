@@ -1,11 +1,11 @@
 const express=require("express");
-const {createSettlementCycle,getSettlementCycle}=require("./settlement.controller")
+const {createSettlementCycle,getSettlementCycle,closeSettlementCycle}=require("./settlement.controller")
 const {authorize}=require("../../middleware/auth.middleware")
 
 const router=express.Router();
 
 router.post("/settlement_cycle",authorize,createSettlementCycle)
 router.get("/settlement_cycle",authorize,getSettlementCycle)
-
+router.post("/groups/:id/settlement_cycle/close",authorize,closeSettlementCycle)
 
 module.exports=router;
