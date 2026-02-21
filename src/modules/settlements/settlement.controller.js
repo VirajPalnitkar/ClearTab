@@ -15,16 +15,15 @@ async function createSettlementCycle(req,res){
                 Select * from group_members where group_id=? and user_id=?
             `,[group_id,id])
         if(rows1.length==0)
-            throw new Error();
+            throw new Error("Not a part of group");
         const [rows]=await connection.execute(`
-                Select * from settlement_cycles where group_id=? and status='ACTIVE' FOR UPDATE
-            `,[group_id,mysqlStartDate,mysqlEndDate])
+                Select * from settlement_cycles where group_id=? and status='ACTIVE'
+            `,[group_id])
         if(rows.length>0)
-            throw new Error();
+            throw new Error("Cycle already exists");
         const [result]=await connection.execute(`
                 INSERT into settlement_cycles(group_id,start_date,end_date) values(?,?,?)         
             `,[group_id,mysqlStartDate,mysqlEndDate])
-        console.log(result)
         await connection.commit();
         return res.status(201).json({"message":"Cycle Created Successfully"})
     }
@@ -52,7 +51,7 @@ async function getSettlementCycle(req,res){
         if(rows1.length==0)
             throw new Error();
         const [rows]=await connection.execute(`
-                Select id from settlement_cycles where group_id=? and status='ACTIVE'
+                Select * from settlement_cycles where group_id=? and status='ACTIVE'
             `,[group_id])
         return res.status(200).json(rows)
     }
