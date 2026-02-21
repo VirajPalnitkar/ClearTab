@@ -3,6 +3,7 @@ const app=express();
 const userRouter=require("../src/modules/auth/auth.routes")
 const groupRouter=require("../src/modules/groups/group.routes")
 const settlementRouter=require("../src/modules/settlements/settlement.routes")
+require("../src/modules/settlements/settlement.services")
 
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
