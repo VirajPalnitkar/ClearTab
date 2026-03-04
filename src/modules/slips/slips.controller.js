@@ -7,6 +7,8 @@ async function createSlip(req,res){
     try{
         connection=await pool.getConnection();
         await connection.beginTransaction();
+        if(parseInt(from_user_id)===parseInt(to_user_id))
+            throw new Error("Cant create slip to own self")
         const [result]=await connection.execute(`
             SELECT * from group_members gm1 inner join group_members gm2 
             on gm1.group_id=gm2.group_id
@@ -32,7 +34,7 @@ async function createSlip(req,res){
         if(connection)
             await connection.rollback();
         console.log(e.message)
-        return res.status(400).json({error:"COuldnt Create slip"})
+        return res.status(400).json({error:e.message})
     }
     finally{
         if(connection)
@@ -40,4 +42,31 @@ async function createSlip(req,res){
     }
 }
 
-module.exports={createSlip}
+async function acceptSlip(req,res){
+    const {id}=req.user;
+    const {slip_id}=req.body;
+    let connection;
+    try{
+        connection=await pool.getConnection();
+        await connection.beginTransaction();
+        const [rows]=await connection.execute("SELECT * FROM payment_slips where id=? and status='PENDING'",[slip_id])
+        if(rows.length==0)
+            throw new Error("Slip not found")
+        const {to_user_id,group_id,settlement_cycle_id,amount,reason}=rows[0]
+        await connection.execute("INSERT INTO ledger_entries(from_user_id,to_user_id,group_id,settlement_cycle_id,amount,reason) VALUES(?,?,?,?,?,?)",[id,to_user_id,group_id,settlement_cycle_id,amount,reason])
+        await connection.execute("UPDATE payment_slips SET status='APPROVED' WHERE id=?",[slip_id])
+        await connection.commit();
+        throw new Error("Ledger created")
+    }
+    catch(e){
+        if(connection)
+            await connection.rollback();
+        return res.status(500).json({error:e.message})
+    }
+    finally{
+        if(connection)
+            connection.release();
+    }
+}
+
+module.exports={createSlip,acceptSlip}
